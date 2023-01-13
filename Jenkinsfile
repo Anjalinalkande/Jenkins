@@ -16,24 +16,7 @@ pipeline {
     stages {
         stage('Make executable') {
             steps {
-                sh('chmod +x ./scripts/fibonacci.sh')
-            }
-        }
-        stage('Relative path') {
-            steps {
-                sh("C:/ProgramData/Jenkins/.jenkins/workspace/PeipelineDemo/fibonacci.sh ${env.NUMBER}")
-            }
-        }
-        stage('Full path') {
-            steps {
-                sh("${env.WORKSPACE}/scripts/fibonacci.sh ${env.NUMBER}")
-            }
-        }
-        stage('Change directory') {
-            steps {
-                dir("${env.WORKSPACE}/scripts"){
-                    sh("./fibonacci.sh ${env.NUMBER}")
-                }
+                echo('chmod +x ./scripts/fibonacci.sh')
             }
         }
     }
