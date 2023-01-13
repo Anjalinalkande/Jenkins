@@ -1,33 +1,33 @@
 pipeline {
-    agent { docker 'public.ecr.aws/docker/library/golang:latest' }
-    environment {
-      // moving the cache to the workspace might speed up
-      // the build stage.  maybe use ${env.WORKSPACE}/.build_cache?
-      GOCACHE = "${env.WORKSPACE}/.build_cache?"
-    }
+    agent any
     options {
-        buildDiscarder(logRotator(daysToKeepStr: '10', numToKeepStr: '10'))
-        timeout(time: 1, unit: 'HOURS')
-        timestamps()
+        copyArtifactPermission 'read-artifact'
     }
     stages {
-        stage('Source') {
+        stage('Create-Artifact') {
             steps {
-                sh 'which go'
-                sh 'go version'
-                git branch: 'stable',
-                    url: 'https://github.com/gohugoio/hugo.git'
+                // the `set` command is a built-in shell command that
+                // prints the name and values of all variables visible
+                // to the shell's environment.
+                // https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html
+                //
+                // The following uses the `sh` build step to run the
+                // `set` command on the local system.  Note that if this
+                // pipeline is run on a system that does not have a
+                // built-in `set` command, any builds of the pipeline
+                // will fail.  This may be the case on systems running
+                // Windows OS with Powershell.
+                sh "set > report.txt"
             }
         }
-        stage('Build') {
-            steps {
-                sh "go build --tags extended"
-            }
-        }
-        stage('Test') {
-            steps {
-                sh './hugo env'
-            }
+    }
+    post {
+        always {
+            archiveArtifacts allowEmptyArchive: true,
+                artifacts: 'report.txt',
+                fingerprint: true,
+                followSymlinks: false,
+                onlyIfSuccessful: true
         }
     }
 }
